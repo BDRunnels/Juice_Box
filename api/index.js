@@ -5,22 +5,23 @@ const postsRouter = require("./posts");
 const usersRouter = require("./users");
 const tagsRouter = require("./tags");
 const jwt = require("jsonwebtoken");
-const { getUserById } = require("../db");
+const { getUserByUsername } = require("../db");
 const { JWT_SECRET } = process.env;
 
 apiRouter.use(async (req, res, next) => {
-    const prefix = "Bearer";
+    const prefix = "Bearer ";
     const auth = req.header("Authorization");
-
+    // console.log(auth);
     if (!auth) {
         next();
     } else if (auth.startsWith(prefix)) {
         const token = auth.slice(prefix.length);
-
+        console.log(token);
         try {
-            const {id} = jwt.verify(token, JWT_SECRET);
-            if (id) {
-                req.user = await getUserById(id);
+            const {username} = jwt.verify(token, JWT_SECRET);
+            // console.log(tokenResponse);
+            if (username) {
+                req.user = await getUserByUsername(username);
                 next();
             }
         } catch ({name, message}) {
@@ -34,10 +35,17 @@ apiRouter.use(async (req, res, next) => {
     }
 });
 
+apiRouter.use((req,res,next) => {
+    if (req.user) {
+        console.log("User is set:", req.user);
+    }
+
+    next();
+});
 
 apiRouter.use("/users", usersRouter);
-apiRouter.use("/posts", postsRouter)
-apiRouter.use("/tags", tagsRouter)
+apiRouter.use("/posts", postsRouter);
+apiRouter.use("/tags", tagsRouter);
 
 
 apiRouter.use((error,req,res,next) => {

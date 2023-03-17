@@ -330,6 +330,7 @@ async function getUserByUsername(username) {
             WHERE username=$1
         `, [username]);
         
+        user.posts = await getPostsByUser(user.id);
         return user;
 
     } catch (error) {
